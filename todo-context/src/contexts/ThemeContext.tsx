@@ -1,57 +1,31 @@
 import { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
 
-export interface Todo {
-  id: string;
-  text: string;
-  completed: boolean;
+type Theme = "light" | "dark";
+
+interface ThemeContextType {
+  theme: Theme;
+  toggleTheme: () => void;
 }
 
-interface TodoContextType {
-  todos: Todo[];
-  addTodo: (text: string) => void;
-  toggleTodo: (id: string) => void;
-  deleteTodo: (id: string) => void;
-  editTodo: (id: string, text: string) => void;
-}
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const TodoContext = createContext<TodoContextType | undefined>(undefined);
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const [theme, setTheme] = useState<Theme>("light");
 
-export const TodoProvider = ({ children }: { children: ReactNode }) => {
-  const [todos, setTodos] = useState<Todo[]>([]); // ✅ typed here
-
-  const addTodo = (text: string) => {
-    setTodos((prev) => [
-      ...prev,
-      { id: Date.now().toString(), text, completed: false },
-    ]);
-  };
-
-  const toggleTodo = (id: string) => {
-    setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
-    );
-  };
-
-  const deleteTodo = (id: string) => {
-    setTodos((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  const editTodo = (id: string, text: string) => {
-    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, text } : t)));
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
   return (
-    <TodoContext.Provider
-      value={{ todos, addTodo, toggleTodo, deleteTodo, editTodo }}
-    >
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
-    </TodoContext.Provider>
+    </ThemeContext.Provider>
   );
 };
 
-export const useTodos = () => {
-  const context = useContext(TodoContext);
-  if (!context) throw new Error("useTodos must be used within a TodoProvider");
+export const useTheme = (): ThemeContextType => {
+  const context = useContext(ThemeContext);
+  if (!context) throw new Error("useTheme must be used within a ThemeProvider");
   return context;
 };
