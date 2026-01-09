@@ -1,12 +1,13 @@
 import { useTodos } from "../contexts/TodoContext";
 import { useFilter } from "../contexts/FilterContext";
 import TodoItem from "./TodoItem";
+import type { Todo } from "../contexts/TodoContext";
 
 const TodoList = () => {
   const { todos } = useTodos();
   const { filter } = useFilter();
 
-  const filteredTodos = todos.filter((t) => {
+  const filteredTodos = todos.filter((t: Todo) => {
     if (filter === "active") return !t.completed;
     if (filter === "completed") return t.completed;
     return true;
@@ -18,7 +19,7 @@ const TodoList = () => {
 
   return (
     <ul className="todo-list">
-      {filteredTodos.map((todo) => (
+      {filteredTodos.map((todo: Todo) => (
         <TodoItem key={todo.id} todo={todo} />
       ))}
     </ul>

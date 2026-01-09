@@ -1,69 +1,59 @@
-import { createContext, useContext, useReducer, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
 
 export interface Todo {
-  id: number;
+  id: string;
   text: string;
   completed: boolean;
 }
 
-type Action =
-  | { type: "ADD"; payload: string }
-  | { type: "TOGGLE"; payload: number }
-  | { type: "DELETE"; payload: number }
-  | { type: "EDIT"; payload: { id: number; text: string } }
-  | { type: "CLEAR_COMPLETED" };
+interface TodoContextType {
+  todos: Todo[];
+  addTodo: (text: string) => void;
+  toggleTodo: (id: string) => void;
+  deleteTodo: (id: string) => void;
+  editTodo: (id: string, text: string) => void;
+}
 
-const TodoContext = createContext<any>(null);
-
-const reducer = (state: Todo[], action: Action): Todo[] => {
-  switch (action.type) {
-    case "ADD":
-      return [
-        ...state,
-        { id: Date.now(), text: action.payload, completed: false },
-      ];
-    case "TOGGLE":
-      return state.map((t) =>
-        t.id === action.payload ? { ...t, completed: !t.completed } : t
-      );
-    case "DELETE":
-      return state.filter((t) => t.id !== action.payload);
-    case "EDIT":
-      return state.map((t) =>
-        t.id === action.payload.id ? { ...t, text: action.payload.text } : t
-      );
-    case "CLEAR_COMPLETED":
-      return state.filter((t) => !t.completed);
-    default:
-      return state;
-  }
-};
+// Create context with proper type
+const TodoContext = createContext<TodoContextType | undefined>(undefined);
 
 export const TodoProvider = ({ children }: { children: ReactNode }) => {
-  const [todos, dispatch] = useReducer(reducer, [], () =>
-    JSON.parse(localStorage.getItem("todos") || "[]")
-  );
+  const [todos, setTodos] = useState<Todo[]>([]); // ✅ typed
 
-  useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos]);
+  const addTodo = (text: string) => {
+    setTodos((prev) => [
+      ...prev,
+      { id: Date.now().toString(), text, completed: false },
+    ]);
+  };
+
+  const toggleTodo = (id: string) => {
+    setTodos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+    );
+  };
+
+  const deleteTodo = (id: string) => {
+    setTodos((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const editTodo = (id: string, text: string) => {
+    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, text } : t)));
+  };
 
   return (
     <TodoContext.Provider
-      value={{
-        todos,
-        addTodo: (text: string) => dispatch({ type: "ADD", payload: text }),
-        toggleTodo: (id: number) => dispatch({ type: "TOGGLE", payload: id }),
-        deleteTodo: (id: number) => dispatch({ type: "DELETE", payload: id }),
-        editTodo: (id: number, text: string) =>
-          dispatch({ type: "EDIT", payload: { id, text } }),
-        clearCompleted: () => dispatch({ type: "CLEAR_COMPLETED" }),
-      }}
+      value={{ todos, addTodo, toggleTodo, deleteTodo, editTodo }}
     >
       {children}
     </TodoContext.Provider>
   );
 };
 
-export const useTodos = () => useContext(TodoContext);
+// Proper return type for useTodos
+export const useTodos = (): TodoContextType => {
+  const context = useContext(TodoContext);
+  if (!context) throw new Error("useTodos must be used within a TodoProvider");
+  return context;
+};
