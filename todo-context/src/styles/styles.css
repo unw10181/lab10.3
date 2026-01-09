@@ -4,6 +4,15 @@
   padding: 2rem;
   text-align: center;
 }
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  /* remove background-color here */
+}
+
 body.light {
   background-color: #f9fafb;
   color: #111827;
@@ -12,18 +21,6 @@ body.light {
 body.dark {
   background-color: #111827;
   color: #f9fafb;
-}
-
-body.light button {
-  background-color: #f9f9f9;
-  color: #111827;
-  border: 1px solid #ccc;
-}
-
-body.dark button {
-  background-color: #1a1a1a;
-  color: #f9fafb;
-  border: 1px solid #444;
 }
 .app {
   max-width: 500px;
